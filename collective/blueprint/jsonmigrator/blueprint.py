@@ -23,6 +23,16 @@ from Products.CMFCore.utils import getToolByName
 from Products.Archetypes.interfaces import IBaseObject
 from AccessControl.interfaces import IRoleManager
 
+from plone.dexterity.utils import iterSchemata
+from zope.schema import getFieldsInOrder
+
+try:
+    from plone.dexterity.interfaces import IDexterityContent
+    dexterity_available = True
+except:
+    dexterity_available = False
+
+
 DATAFIELD = '_datafield_'
 STATISTICSFIELD = '_statistics_field_prefix_'
 
@@ -512,6 +522,7 @@ class DataFields(object):
             if obj is None:                     # path doesn't exist
                 yield item; continue
 
+            # AT
             if IBaseObject.providedBy(obj):
                 for key in item.keys():
                     if not key.startswith(self.datafield_prefix):
@@ -526,5 +537,35 @@ class DataFields(object):
                     f.close()
                     if len(value) != len(field.get(obj)):
                         field.set(obj, value)
+
+            # dexterity
+            if dexterity_available and IDexterityContent.providedBy(obj):
+                for key in item.keys():
+                    if not key.startswith(self.datafield_prefix):
+                        continue
+                    if not os.path.exists(item[key]):
+                        continue
+
+                    fieldname = key[len(self.datafield_prefix):]
+                    f = open(item[key])
+                    value = f.read()
+                    f.close()
+
+                    filename = item['id'].decode('utf-8')
+                    contenttype = ''
+
+                    #get all fields for this obj
+                    for schemata in iterSchemata(obj):
+                        for name, field in getFieldsInOrder(schemata):
+                            if field.__name__ == fieldname:
+                                # create a blob instance
+                                instance = field._type(
+                                    data=value,
+                                    filename=filename,
+                                    contentType=contenttype,
+                                    )
+                                # set it
+                                field.set(field.interface(obj), instance)
+                                continue
 
             yield item
