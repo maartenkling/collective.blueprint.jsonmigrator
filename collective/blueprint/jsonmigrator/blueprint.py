@@ -211,7 +211,7 @@ class Mimetype(object):
             if obj is None:                     # path doesn't exist
                 yield item; continue
 
-            if IBaseObject.providedBy(obj):
+            if IBaseObject.providedBy(obj) or (dexterity_available and IDexterityContent.providedBy(obj)):
                 obj.setFormat(item[mimetypekey])
 
             yield item
@@ -257,7 +257,7 @@ class WorkflowHistory(object):
             if obj is None or not getattr(obj, 'workflow_history', False):
                 yield item; continue
 
-            if IBaseObject.providedBy(obj):
+            if IBaseObject.providedBy(obj) or (dexterity_available and IDexterityContent.providedBy(obj)):
                 item_tmp = item
 
                 # get back datetime stamp and set the workflow history
@@ -313,7 +313,7 @@ class Properties(object):
             if obj is None:                 # path doesn't exist
                 yield item; continue
 
-            if IBaseObject.providedBy(obj):
+            if IBaseObject.providedBy(obj) or (dexterity_available and IDexterityContent.providedBy(obj)):
                 if getattr(aq_base(obj), '_delProperty', False):
                     for prop in item[propertieskey]:
                         if getattr(aq_base(obj), prop[0], None) is not None:
@@ -372,7 +372,7 @@ class Owner(object):
             if obj is None:             # path doesn't exist
                 yield item; continue
 
-            if IBaseObject.providedBy(obj):
+            if IBaseObject.providedBy(obj) or (dexterity_available and IDexterityContent.providedBy(obj)):
 
                 if item[ownerkey][0] and item[ownerkey][1]:
                     try:
@@ -390,7 +390,6 @@ class Owner(object):
                         obj._owner = item[ownerkey][1]
                     except Exception, e:
                         raise Exception('ERROR: %s SETTING __OWNERSHIP TO %s' % (str(e), item[pathkey]))
-
             yield item
 
 
