@@ -484,7 +484,7 @@ class LocalRoles(object):
                 for principal, roles in item[roleskey].items():
                     if roles:
                         obj.manage_addLocalRoles(principal, roles)
-                        obj.reindexObjectSecurity()
+                        #obj.reindexObjectSecurity()
 
             yield item
 
